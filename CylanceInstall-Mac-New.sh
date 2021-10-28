@@ -26,11 +26,28 @@ fi
 #REMEDIATION CODE
 
 #!/bin/bash
+check_file="/Applications/Cylance/Optics/Uninstall CylanceOPTICS.app"
+check_file2="/Applications/Cylance/Uninstall CylancePROTECT.app"
 
-installer -pkg CylancePROTECT.pkg -target /
-darwinVersion=$(uname -r | cut -d "." -f1)
-#if [[ "$darwinVersion" -lt 20 ]]; then
+# check if app exists
+if [[ -e "$check_file2" ]]; then
+	if [ "$(grep 1594 /Applications/Cylance/CylanceUI.app/Contents/Info.plist | wc -l)" -gt 0 ] then
+		echo "PROTECT 1594 Installed, Good to Go!"
+	else
+		echo "Old PROTECT Installed, must uninstall first"
+		sudo /Applications/Cylance/Uninstall\ CylancePROTECT.app/Contents/MacOS/Uninstall\ CylancePROTECT
+		echo "Installing Protect 1594"
+		installer -pkg CylancePROTECT.pkg -target /
+		echo "1594 Installed, Moving On"
+
+	fi
+else
+	echo "PROTECT not installed, Let's install 1594"
+	installer -pkg CylancePROTECT.pkg -target /
+	echo "1594 Installed, Moving On"
+fi
 #  echo "We are not on Big Sur or Monterey so installing OPTICS"
-  installer -pkg CylanceOPTICS.pkg -target /
-  exit 0
+echo "Installing OPTICS3"
+installer -pkg CylanceOPTICS3.pkg -target /
+exit 0
 #fi
