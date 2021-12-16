@@ -19,19 +19,22 @@ if ($Cylance.version -lt $targetversion) {
 #REMEDIATION CODE
 
 $targetversion = 2.0
+Write-Output "Grabbing WMI Object"
 $Cylance = Get-WmiObject -Class Win32_Product | where vendor -eq "Cylance, Inc."
+Write-Output "Got it!"
 if($Cylance) {
     Write-Output "Running Remediation code"
     if ($Cylance.name -eq "Cylance Unified Agent") {
         #Less Than Target need to uninstall
-       Write-Output "We are running the Unified Agent so proceeding to Uninstall"
+        Write-Output "We are running the Unified Agent so proceeding to Uninstall"
         Write-Output "Uninstalling " $Cylance.name
         $exit = $Cylance.uninstall()
         Write-Output $exit.ReturnValue
         if($exit.ReturnValue -eq 0) {
            exit (Start-Process -FilePath 'msiexec.exe' -ArgumentList ('/q', '/i', '"installer_vista_win7_win8-64-3.7.0.1503.msi"', 'COMPANY_CODE=NHFQT1RAWE3U6XYCELT') -Wait -Passthru).ExitCode
        } else {
-           Exit($exit.ReturnValue)
+           #Exit($exit.ReturnValue)
+           Write-Output "Exit Code of uninstall not zero"
        }
     } else {
       #Greater than Target
@@ -39,6 +42,7 @@ if($Cylance) {
        Exit(0)
     }
 } else {
-    Write-Output "We grabbed the Cylance WMI Object but it is null so we are just exiting. This shouldn't happen ever so if it does you need to investigate"
-    Exit(1)
+    Write-Output "We grabbed the Cylance WMI Object but it is null so we don't need to uninstall it"
+    exit (Start-Process -FilePath 'msiexec.exe' -ArgumentList ('/q', '/i', '"installer_vista_win7_win8-64-3.7.0.1503.msi"', 'COMPANY_CODE=NHFQT1RAWE3U6XYCELT') -Wait -Passthru).ExitCode
+    #Exit(1)
 }
